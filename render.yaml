@@ -1,0 +1,60 @@
+services:
+  # PostgreSQL Database
+  - name: forensica-db
+    plan: free
+    region: oregon
+    postgresVersion: 15
+    postgresPlan: free
+
+  # Redis for Celery
+  - name: forensica-redis
+    plan: free
+    region: oregon
+    redisPlan: free
+
+  # Backend API (FastAPI)
+  - name: forensica-api
+    plan: free
+    region: oregon
+    buildCommand: cd backend_fastapi && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    envVars:
+      - key: POSTGRES_SERVER
+        fromService: forensica-db
+        serviceField: host
+      - key: POSTGRES_PORT
+        fromService: forensica-db
+        serviceField: port
+      - key: POSTGRES_USER
+        fromService: forensica-db
+        serviceField: user
+      - key: POSTGRES_PASSWORD
+        fromService: forensica-db
+        serviceField: password
+      - key: POSTGRES_DB
+        fromService: forensica-db
+        serviceField: database
+      - key: CELERY_BROKER_URL
+        fromService: forensica-redis
+        serviceField: url
+      - key: CELERY_RESULT_BACKEND
+        fromService: forensica-redis
+        serviceField: url
+      - key: SECRET_KEY
+        value: change_this_to_a_secure_random_string
+      - key: GEMINI_API_KEY
+        value: your_gemini_api_key_here
+    disk:
+      mountPath: /app/uploads
+      sizeGB: 1
+
+  # Frontend (Static Site)
+  - name: forensica-web
+    plan: free
+    region: oregon
+    buildCommand: npm run build
+    startCommand: npx vite preview --host --port 10000
+    envVars:
+      - key: VITE_API_URL
+        value: https://forensica-api.onrender.com
+    staticPublishPath: dist
