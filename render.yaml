@@ -1,136 +1,42 @@
 services:
-  # -----------------------------
-  # PostgreSQL Database
-  # -----------------------------
-  - name: forensica-db
-    type: postgres
-    plan: free
-    region: oregon
-    postgresVersion: 15
-
-  # -----------------------------
-  # Redis (Celery Broker)
-  # -----------------------------
-  - name: forensica-redis
-    type: redis
-    plan: free
-    region: oregon
-
-  # -----------------------------
   # Backend API (FastAPI)
-  # -----------------------------
   - name: forensica-api
     type: web
     plan: free
     region: oregon
     buildCommand: cd backend_fastapi && pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000
     envVars:
-      # Python version
-      - key: PYTHON_VERSION
-        value: 3.10
-
-      # PostgreSQL
       - key: POSTGRES_SERVER
-        fromService:
-          name: forensica-db
-          type: pserv
-          property: host
-
+        value: <your_postgres_host>
       - key: POSTGRES_PORT
-        fromService:
-          name: forensica-db
-          type: pserv
-          property: port
-
+        value: 5432
       - key: POSTGRES_USER
-        fromService:
-          name: forensica-db
-          type: pserv
-          property: user
-
+        value: <your_postgres_user>
       - key: POSTGRES_PASSWORD
-        fromService:
-          name: forensica-db
-          type: pserv
-          property: password
-
+        value: <your_postgres_password>
       - key: POSTGRES_DB
-        fromService:
-          name: forensica-db
-          type: pserv
-          property: database
-
-      # Redis (Celery)
+        value: <your_postgres_db>
       - key: CELERY_BROKER_URL
-        fromService:
-          name: forensica-redis
-          type: redis
-          property: connectionString
-
+        value: <your_redis_url>
       - key: CELERY_RESULT_BACKEND
-        fromService:
-          name: forensica-redis
-          type: redis
-          property: connectionString
-
-      # Secrets (set in dashboard)
+        value: <your_redis_url>
       - key: SECRET_KEY
-        sync: false
-
+        value: change_this_to_a_secure_random_string
       - key: GEMINI_API_KEY
-        sync: false
-
+        value: your_gemini_api_key_here
     disk:
       mountPath: /app/uploads
       sizeGB: 1
 
-  # -----------------------------
-  # Celery Worker
-  # -----------------------------
-  - name: forensica-worker
-    type: worker
-    plan: free
-    region: oregon
-    buildCommand: cd backend_fastapi && pip install -r requirements.txt
-    startCommand: celery -A app.worker worker --loglevel=info
-
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.10
-
-      - key: CELERY_BROKER_URL
-        fromService:
-          name: forensica-redis
-          type: redis
-          property: connectionString
-
-      - key: CELERY_RESULT_BACKEND
-        fromService:
-          name: forensica-redis
-          type: redis
-          property: connectionString
-
-      - key: SECRET_KEY
-        sync: false
-
-      - key: GEMINI_API_KEY
-        sync: false
-
-  # -----------------------------
   # Frontend (Static Site)
-  # -----------------------------
   - name: forensica-web
-    type: web
-    runtime: static
+    type: static_site
     plan: free
     region: oregon
-
-    buildCommand: npm install && npm run build
-
-    staticPublishPath: dist
-
+    buildCommand: npm run build
+    startCommand: npx vite preview --host --port 10000
     envVars:
       - key: VITE_API_URL
-        sync: false   # set after backend deploy
+        value: https://forensica-api.onrender.com
+    staticPublishPath: dist
