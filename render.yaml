@@ -1,64 +1,136 @@
 services:
+  # -----------------------------
   # PostgreSQL Database
+  # -----------------------------
   - name: forensica-db
     type: postgres
     plan: free
     region: oregon
     postgresVersion: 15
-    postgresPlan: free
 
-  # Redis for Celery
+  # -----------------------------
+  # Redis (Celery Broker)
+  # -----------------------------
   - name: forensica-redis
     type: redis
     plan: free
     region: oregon
-    redisPlan: free
 
+  # -----------------------------
   # Backend API (FastAPI)
+  # -----------------------------
   - name: forensica-api
     type: web
     plan: free
     region: oregon
     buildCommand: cd backend_fastapi && pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
     envVars:
+      # Python version
+      - key: PYTHON_VERSION
+        value: 3.10
+
+      # PostgreSQL
       - key: POSTGRES_SERVER
-        fromService: forensica-db
-        serviceField: host
+        fromService:
+          name: forensica-db
+          type: pserv
+          property: host
+
       - key: POSTGRES_PORT
-        fromService: forensica-db
-        serviceField: port
+        fromService:
+          name: forensica-db
+          type: pserv
+          property: port
+
       - key: POSTGRES_USER
-        fromService: forensica-db
-        serviceField: user
+        fromService:
+          name: forensica-db
+          type: pserv
+          property: user
+
       - key: POSTGRES_PASSWORD
-        fromService: forensica-db
-        serviceField: password
+        fromService:
+          name: forensica-db
+          type: pserv
+          property: password
+
       - key: POSTGRES_DB
-        fromService: forensica-db
-        serviceField: database
+        fromService:
+          name: forensica-db
+          type: pserv
+          property: database
+
+      # Redis (Celery)
       - key: CELERY_BROKER_URL
-        fromService: forensica-redis
-        serviceField: url
+        fromService:
+          name: forensica-redis
+          type: redis
+          property: connectionString
+
       - key: CELERY_RESULT_BACKEND
-        fromService: forensica-redis
-        serviceField: url
+        fromService:
+          name: forensica-redis
+          type: redis
+          property: connectionString
+
+      # Secrets (set in dashboard)
       - key: SECRET_KEY
-        value: change_this_to_a_secure_random_string
+        sync: false
+
       - key: GEMINI_API_KEY
-        value: your_gemini_api_key_here
+        sync: false
+
     disk:
       mountPath: /app/uploads
       sizeGB: 1
 
-  # Frontend (Static Site)
-  - name: forensica-web
-    type: static_site
+  # -----------------------------
+  # Celery Worker
+  # -----------------------------
+  - name: forensica-worker
+    type: worker
     plan: free
     region: oregon
-    buildCommand: npm run build
-    startCommand: npx vite preview --host --port 10000
+    buildCommand: cd backend_fastapi && pip install -r requirements.txt
+    startCommand: celery -A app.worker worker --loglevel=info
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10
+
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: forensica-redis
+          type: redis
+          property: connectionString
+
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: forensica-redis
+          type: redis
+          property: connectionString
+
+      - key: SECRET_KEY
+        sync: false
+
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # -----------------------------
+  # Frontend (Static Site)
+  # -----------------------------
+  - name: forensica-web
+    type: web
+    runtime: static
+    plan: free
+    region: oregon
+
+    buildCommand: npm install && npm run build
+
+    staticPublishPath: dist
+
     envVars:
       - key: VITE_API_URL
-        value: https://forensica-api.onrender.com
-    staticPublishPath: dist
+        sync: false   # set after backend deploy
