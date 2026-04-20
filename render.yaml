@@ -1,6 +1,7 @@
 services:
   # PostgreSQL Database
   - name: forensica-db
+    type: postgres
     plan: free
     region: oregon
     postgresVersion: 15
@@ -8,12 +9,14 @@ services:
 
   # Redis for Celery
   - name: forensica-redis
+    type: redis
     plan: free
     region: oregon
     redisPlan: free
 
   # Backend API (FastAPI)
   - name: forensica-api
+    type: web
     plan: free
     region: oregon
     buildCommand: cd backend_fastapi && pip install -r requirements.txt
@@ -50,6 +53,7 @@ services:
 
   # Frontend (Static Site)
   - name: forensica-web
+    type: static_site
     plan: free
     region: oregon
     buildCommand: npm run build
