@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;1,400&family=Orbitron:wght@400;700&family=Tomorrow:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Oxanium:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-charcoal: #121212;
+  --color-cloud: #F5F5F7;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Orbitron", sans-serif;
+  --font-tomorrow: "Tomorrow", sans-serif;
+  --font-roboto: "Roboto", sans-serif;
+  --font-oxanium: "Oxanium", sans-serif;
+
+  --color-bg-app: var(--bg-app);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-card-surface: var(--card-surface);
+  --color-card-stroke: var(--card-stroke);
+  --color-accent: var(--accent);
+  --color-accent-glow: var(--accent-glow);
+  --color-success: var(--success);
+  --color-error: var(--error);
+}
+
+:root {
+  --bg-app: #121212;
+  --text-main: #F5F5F7;
+  --text-muted: rgba(245, 245, 247, 0.6);
+  --card-surface: rgba(255, 255, 255, 0.05);
+  --card-stroke: rgba(255, 255, 255, 0.1);
+  --accent: #6320ff; /* violet-500 */
+  --accent-glow: rgba(139, 92, 246, 0.5);
+  --success: #00ffaa; /* emerald-500 */
+  --error: #EF4444; /* red-500 */
+  --tile-hover-bg: #FFFFFF;
+  --tile-hover-text: #121212;
+  --home-tile-from: rgba(99, 32, 255, 0.05);
+  --home-tile-to: rgba(99, 32, 255, 0.1);
+  --home-tile-border: rgba(99, 32, 255, 0.7);
+  --home-tile-analyzed-border: rgba(99, 32, 255, 0.5);
+}
+
+.light {
+  --bg-app: #F5F5F7;
+  --text-main: #121212;
+  --text-muted: rgba(18, 18, 18, 0.6);
+  --card-surface: rgba(0, 0, 0, 0.03);
+  --card-stroke: rgba(0, 0, 0, 0.08);
+  --accent: #6320ff; /* violet-500 */
+  --accent-glow: rgba(139, 92, 246, 0.5);
+  --success: #05e365e8; /* emerald-600 (darker) */
+  --error: #DC2626; /* red-600 */
+  --tile-hover-bg: #121212;
+  --tile-hover-text: #ffffff;
+  --home-tile-from: rgba(255, 255, 255, 0.7);
+  --home-tile-to: rgba(184, 180, 180, 0.9);
+  --home-tile-border: rgba(51, 51, 51, 0.4);
+  --home-tile-analyzed-border: rgba(51, 51, 51, 0.348);
+  --home-tile-glass-white: rgb(255, 255, 255);
+  --home-tile-glass-border: rgb(255, 255, 255);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-bg-app text-text-main font-sans antialiased transition-colors duration-500;
+  }
+
+  /* Futuristic Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+    border-radius: 10px;
+    opacity: 0.2;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-main);
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+}
+
+.glass-card {
+  @apply bg-card-surface backdrop-blur-md border border-card-stroke rounded-2xl;
+}
+
+.cloud-tile {
+  @apply bg-card-surface backdrop-blur-xl border border-card-stroke text-text-main rounded-2xl p-8 transition-all duration-300 
+  hover:scale-[1.02] hover:bg-[var(--tile-hover-bg)] hover:text-[var(--tile-hover-text)] hover:shadow-[0_0_40px_var(--accent-glow)]
+  active:scale-[0.98] active:bg-[var(--tile-hover-bg)] active:text-[var(--tile-hover-text)] active:border-[var(--tile-hover-bg)] cursor-pointer;
+}
+
+.violet-tile {
+  @apply bg-accent/10 backdrop-blur-xl border border-accent/20 text-text-main rounded-2xl p-8 transition-all duration-300 
+  hover:scale-[1.02] hover:bg-[var(--tile-hover-bg)] hover:text-[var(--tile-hover-text)] hover:border-[var(--tile-hover-bg)] hover:shadow-[0_0_40px_var(--accent-glow)]
+  active:scale-[0.98] active:bg-[var(--tile-hover-bg)] active:text-[var(--tile-hover-text)] active:border-[var(--tile-hover-bg)] cursor-pointer;
+}
+
+.no-anim-violet {
+  @apply hover:scale-100 active:scale-100 hover:shadow-none transition-none cursor-default hover:bg-accent/10 hover:border-accent/20 active:bg-accent/10 active:border-accent/20;
+}
+
+.no-anim-cloud {
+  @apply hover:scale-100 active:scale-100 hover:shadow-none transition-none cursor-default hover:bg-card-surface hover:text-text-main hover:border-card-stroke active:bg-card-surface active:text-text-main active:border-card-stroke;
+}
+
+.btn-cloud {
+  @apply bg-card-surface backdrop-blur-md border border-card-stroke text-text-main px-8 py-3 rounded-xl font-semibold transition-all 
+  hover:bg-accent hover:text-white hover:shadow-[0_0_30px_var(--accent-glow)]
+  active:scale-95 active:bg-accent active:text-white active:border-accent;
+}
+
+/* Light mode home tiles with glass grey and black border */
+.light-home-tile {
+  background: rgba(200, 200, 200, 0.7) !important;
+  border: 1px solid rgba(0, 0, 0, 0.8) !important;
+}
